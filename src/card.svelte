@@ -65,6 +65,10 @@
                           return 'tags: <b><mark>' +
                                   card[info] + 
                                   '</mark></b>';
+                  case 'merit':
+                          return '<b><mark>' +
+                                  card[info] + 
+                                  '</mark></b>';
                   default:
                           return ''
           }
@@ -78,7 +82,7 @@
     <button type="button" class="button" on:click={preview}>👁</button>&nbsp;
     <button type="button" class="button" on:click={edit}>✍</button>&nbsp;
     {@html extra_info}
-    <span class='front_text' style='color:purple; display:{due_alert}'>(due)&nbsp;</span>    
+    <span class='front_text' style='color:purple; display:{due_alert}' style:font-size={'14px'}>due&nbsp;</span>    
 
     <span class='front_text' style='text-decoration:{text_decoration}'>{(!card.front_text) ? '(blank)' : card.front_text}</span>
 </div>
@@ -87,10 +91,9 @@
 <style>
   .card_container {
     border: 2px solid black;
-    border-radius: 6px;
     padding: 6px;
-    margin: 3px;
-    background-color: #ddd;
+    margin: 5px;
+    background-color: rgba(256,256,256,0.3);
   }
   .front_text {
     font-size: 1.2em;
@@ -103,7 +106,7 @@
     min-height: 1.8em;
     width: 1.8em;
     height: 1.8em;
-    border-radius: 25%;
+    border-radius: 20%;
     padding: 2px;
   }
 

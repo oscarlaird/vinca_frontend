@@ -1,4 +1,5 @@
 <script>
+    import OcclusionReviewer from './occlusion_reviewer.svelte'
     import { onMount } from 'svelte';
     import { unix_seconds, local_unix_day } from './unix_day.js';
     import { dummy_card } from './card_templates.js'
@@ -12,6 +13,8 @@
     let back_img;
     let front_img;
     let flipped = preview; //we are done clicking and should see the grading buttons
+    let verses_line_no = 1;
+    let verses_lines = card.front_text.split('\n')
     $: display_back_text = (card.card_type!='verses' && flipped) ? 'block' : 'none';
     $: flipper_button_display = flipped ? 'none' : 'block';
     $: grade_buttons_display = flipped && !preview ? 'grid' : 'none';
@@ -20,8 +23,14 @@
     onMount(async () => {
             hypo_due_dates = await hypothetical_due_dates(card.id, current_time);
             state.review_start = unix_seconds();
-            back_img.src = await getProtectedImage(card.back_image_id);
-            front_img.src = await getProtectedImage(card.front_image_id);
+            if (card.front_image_id!=0) {
+                    const image_url = await getProtectedImage(card.front_image_id);
+                    front_img.src = image_url;
+            }
+            if (card.back_image_id!=0 && card.card_type!='occlusion') {
+                    back_img.src = await getProtectedImage(card.back_image_id);
+            }
+
     });
     function delete_card() {
             card.visibility = 'deleted';
@@ -62,16 +71,26 @@
 
             // TODO set the due_date equal to the hypothetical and push to the server
             state.card_to_review = null;
+            flipped = false;
+    }
+    function flip() {
+            if (card.card_type==='basic' || card.card_type==='occlusion') {
+                    flipped = true;
+            } else if (card.card_type==='verses') {
+                    verses_line_no++
+                    flipped = (verses_line_no===verses_lines.length)
+            }
     }
     function default_action() {
             if (!flipped) {
-                    flipped = true;
+                    flip()
             } else {
                     //grade('good');
             }
     }
-    document.onkeypress = function(event) {
-        let char = (typeof event !== 'undefined') ? String.fromCharCode(event.keyCode) : event.which
+    function handleKeydown(event) {
+        //let char = (typeof event !== 'undefined') ? String.fromCharCode(event.keyCode) : event.which
+        const char = event.key;
         if (char==='e') {
                 edit()
         } else if (char==='b' || char=='q') {
@@ -94,6 +113,8 @@
 
 </script>
 
+<svelte:window on:keydown={handleKeydown}/>
+
 <body on:click={default_action}>
 
 <div id='buttons_bar'>
@@ -115,27 +136,41 @@
 </div>
 </div>
 
-{card.front_text}
+{#if card.card_type==='basic' || preview}
+  {@html card.front_text.replace(/\n/g,'<br>')}
+{:else if card.card_type==='verses'}
+  {#each verses_lines.slice(0,verses_line_no) as line}
+          {line}<br>
+  {/each}
+{/if}
+
 <br><br>
-<button id='flipper' type='button' on:click={() => {flipped = true}} style='display: {flipper_button_display}' autofocus>
-	Flip<br>
+<button id='flipper' type='button' on:click={flip} style='display: {flipper_button_display}' autofocus>
+        {card.card_type==='verses' ? 'Next Line' : 'Flip'}<br>
 	<span style='font-size: 14px'>(click anywhere)</span>
 </button>
 
 <div id='backside' style='display: {display_back_text}'>
 	<br>
-  {card.back_text}
+{@html card.back_text.replace('\n','<br>')}
 </div>
 
 {card.tags}
 <hr>
 
-{#if card.back_image_id!=0 && flipped}
+{#if card.back_image_id!=0 && flipped && !card.card_type==='occlusion'}
         <center><img bind:this={back_img} /></center>
 {/if}
-{#if card.front_image_id!=0 && (card.back_image_id===0 || preview || !flipped)}
+{#if card.front_image_id!=0 && (card.back_image_id===0 || preview || !flipped) && !card.card_type==='occlusion'}
         <center><img bind:this={front_img} /></center>
 {/if}
+
+
+{#if card.card_type==='occlusion' && card.front_image_id}
+        <OcclusionReviewer bind:card bind:flipped />
+{/if}
+
+
 </body>
 
 <style>

@@ -3,6 +3,12 @@ import { local_unix_day } from './unix_day.js'
 // user if and how the server fails
 let error = {active: false, code: null, message: ''};
 
+function random_id() {
+        // returns a random 15 digit id
+        // We don't want to go beyond this because javascript only supports 56bit ints.
+        return String(Math.floor(Math.random() * 1000000000000000))
+}
+
 function default_options() {
   return {
     method: 'POST',
@@ -15,7 +21,7 @@ function default_options() {
 // it specifies the date and the number of seconds that it took to edit or review
 
 async function get_users_list() {
-        var url = new URL('http://localhost:8000/users_list');
+        var url = new URL('http://localhost:8000/auth/users_list');
         var options = default_options()
         options.method = 'GET';
         const response = await fetch(url, options);
@@ -23,7 +29,7 @@ async function get_users_list() {
 }
 
 async function get_token(username, password) {
-        var url = new URL('http://localhost:8000/token');
+        var url = new URL('http://localhost:8000/auth/token');
         var fd = new FormData();
         fd.append('username', username)
         fd.append('password', password)
@@ -51,7 +57,7 @@ async function get_token(username, password) {
 }
 
 async function register_and_get_token(username, password) {
-        var url = new URL('http://localhost:8000/register');
+        var url = new URL('http://localhost:8000/auth/register');
         var options = default_options()
         options.body = JSON.stringify( {username: username, password: password} )
         var success = null;
@@ -120,10 +126,9 @@ async function commit_grade(card_id, grade, seconds) {
       .catch(fetch_error_handler);
 }
 
-async function upload_media(content, name) {
-        const params = {content: content, name: name};
+async function upload_media(content, base64=true) {
         let options = default_options();
-        options.body = JSON.stringify( params );
+        options.body = JSON.stringify( {content: content, base64: base64} );
         var url = new URL('http://localhost:8000/upload_media')
         var media_id = null;
         const r = await fetch(url, options)
@@ -139,17 +144,14 @@ async function set_guest_user() {
                 window.localStorage.setItem('username','guest')
                 window.localStorage.setItem('access_token','guest123')
         }
-        // var options = default_options();
-        // options.method = 'GET';
-        // const url = new URL('http://localhost:8000/get_current_user')
-        // const response = await fetch(url, options);
-        // return response.json();
 }
 
-async function fetch_cardlist() {
+async function fetch_cardlist(filters, sort) {
         var options = default_options();
-        options.method = 'GET';
-        const url = new URL('http://localhost:8000/cardlist')
+        const url = new URL('http://localhost:8000/cardlist');
+        const faux_filters = {deleted: null};
+        const payload = {crit: {sort: sort}, filters: filters}
+        options.body = JSON.stringify( payload )
         const response = await fetch(url, options)
               .then(handle_error_response)
               .catch(fetch_error_handler);
@@ -174,11 +176,6 @@ async function get_collection_tags() {
         return response.json();
 }
 
-function arrayBufferToBase64(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
-}
-
-
 async function fetchWithAuthentication(url) {
   const headers = new Headers();
   var options = default_options();
@@ -200,5 +197,23 @@ async function getProtectedImage( media_id) {
   // Update the source of the image.
 }
 
+async function getOcclusionData( media_id ) {
+        // Occlusion cards store their data in plaintext JSON format
+        // In a media record referenced by back_image_id
+        // We can do this because occlusion cards don't need back images
+        
+        // Fetch the image.
+        const url = ("http://localhost:8000/get_occlusion_data?media_id=" + media_id)
+        const response = await fetchWithAuthentication( url );
+        const json = await response.json();
+        return JSON.parse(json)
+}
 
-export { get_collection_tags, hypothetical_due_dates, register_and_get_token, fetch_cardlist, set_guest_user, get_users_list, upload_media, commit_changes, commit_grade, error, getProtectedImage, get_token }
+async function purge(filters) {
+        const url = new URL("http://localhost:8000/purge");
+        var options = default_options();
+        options.body = JSON.stringify( filters );
+        const response = await fetch(url, options);
+}
+
+export { random_id, getOcclusionData, purge, get_collection_tags, hypothetical_due_dates, register_and_get_token, fetch_cardlist, set_guest_user, get_users_list, upload_media, commit_changes, commit_grade, error, getProtectedImage, get_token }

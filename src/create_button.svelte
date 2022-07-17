@@ -9,9 +9,9 @@
 
 <button type='button' on:click={forward}>
   <div id='create_text'>
-    Create <span style="font-size: 120%;">✍</span> 
+    Create <span style="font-size: 100%;">✍</span> 
   </div>
-  <span id='due_count'>{created_count} created today</span>
+  <div id='due_count'>{created_count} created today</div>
 </button>
 
 <style>
@@ -22,6 +22,7 @@
   }
   #create_text {
     font-size: 2em;
+    font-family: "Times New Roman", Times, Serif;
     padding: 0.5em;
   }
   #due_count {

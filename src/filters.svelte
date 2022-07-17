@@ -1,6 +1,9 @@
 <script>
   export let filters;
   export let info
+  export let sort;
+  export let collection_tags;
+  export let filtered_cards
   import AdvancedFilters from './advanced_filters.svelte';
 	let open = false;
 	$: visibility = (open ? 'block' : 'none')
@@ -17,7 +20,7 @@
 </center>
 
 <div style:display={visibility}>
-<AdvancedFilters bind:info bind:filters />
+<AdvancedFilters bind:filtered_cards bind:sort bind:collection_tags bind:info bind:filters />
 </div>
 
 

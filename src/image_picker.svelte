@@ -3,9 +3,9 @@
   import {upload_media, getProtectedImage} from './api.js';
   export let image_id;
   let image_url = null;
-  //let image_url = null;
   let real_file_input;
-  let name = 'Choose image';
+  export let disabled = false;
+  let name = 'Choose Image';
   let button;
   function upload() {
           let file = real_file_input.files[0]
@@ -13,16 +13,16 @@
           const reader = (new FileReader());
           reader.readAsDataURL(file); 
           reader.onload = async () => {
-                  let media_id = await upload_media(reader.result, name);
+                  let media_id = await upload_media(reader.result);
                   image_id = await media_id;
                   image_url = 'url(' + reader.result + ')';  // base64 encoding of selected file with mime-type prefix
+                  button.style['background-image'] = image_url
           };
   };
   onMount(async () => {
           if (image_id!=0) {
-                  image_url = await getProtectedImage( image_id );
-                  button.style['background-image'] = await image_url;
-                  alert(image_url.substring(1,10) + button.style['background-image'])
+                  const image_url = await getProtectedImage( image_id );
+                  button.style['background-image'] = 'url('+image_url+')'
           }
   });
 </script>
@@ -30,7 +30,7 @@
 
 <input type='file' bind:this={real_file_input} on:change={upload} accept='image/*' style='display: none'>
 
-<button bind:this={button} on:click={() => {real_file_input.click()}}>
+<button style:background-color={disabled ? 'lightgray' : 'white'} disabled={disabled} bind:this={button} on:click={() => {real_file_input.click()}}>
 	&nbsp;
 	🖼
 	&nbsp;
@@ -38,7 +38,7 @@
 	&nbsp;
 	📷
 	<br>
-	<span style='font-size: 16px;'>{name}</span>
+	<span style='font-size: 16px;'>{disabled ? 'N/A' : name}</span>
 </button>
 
 <style>

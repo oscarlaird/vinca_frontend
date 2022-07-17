@@ -8,13 +8,14 @@
 	export let audio_file;
 	export let image_file;
 	export let placeholder;
+        export let image_picker_disabled;
 </script>
 
 <div id='main'>
 	<Editor bind:value={text} bind:placeholder></Editor>
 	<div id='media'>
       <Audio></Audio>
-              <Image bind:image_id></Image>
+      <Image bind:image_id disabled={image_picker_disabled}></Image>
 	</div>
 </div>
 

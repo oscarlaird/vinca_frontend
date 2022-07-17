@@ -1,14 +1,18 @@
 <script>
   import { createEventDispatcher } from 'svelte';
+  import InfoTooltip from './info_tooltip.svelte'
+  export let card;
   const dispatch = createEventDispatcher();
   let save   = () => {dispatch('save')}
   let cancel = () => {dispatch('cancel')}
   let preview = () => {dispatch('preview')}
   const card_types = ['basic','verses','occlusion']
-	export let card;
 </script>
 
 <center>
+        <InfoTooltip text="<b>Basic</b>:  class question and answer card <br><br>
+                <b>Verses</b>: tests you line by line (useful for poetry and oratory) <br><br>
+                <b>Occlusion</b>: generate several cards by covering up parts of a map or diagram (useful for geography or anatomy)" />
 {#each card_types as card_type}
 <label>
   <input type="radio" name="card_type" bind:group={card.card_type} value={card_type} checked={card.card_type===card_type}>
@@ -16,15 +20,30 @@
 </label>
 {/each}
 
+
 <button class='submit_button' on:click={cancel}>cancel</button>
 <button class='submit_button' on:click={preview}>preview</button>
 <button class='submit_button' on:click={save}>  save</button>
+
+
+<InfoTooltip text="Quantify in minutes the worth of remembering this knowledge.<br><br>
+        This is difficult.<br><br>
+        This lets you see if the time spent studying a card has been worthwhile. <br><br>
+        It also lets you sort your cards to find the best ones." />
+Merit
+<input type=number bind:value={card.merit} style:width='50px' min=1 max=60>
+
+
 </center>
 
 <style>
+        input[type='radio'] {
+                transform: scale(1.3)
+        }
 	label {
 		display: inline;
 		padding: 12px;
+		font-size: 1.3em;
 	}
 	.submit_button {
 		font-size: 1.2em;

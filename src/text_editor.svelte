@@ -3,9 +3,7 @@
   export let value = null;
 	let area;
 	export let placeholder;
-	onMount(() => {
-		area.placeholder = placeholder;
-	})
+        $: if (area) {area.placeholder = placeholder}
 </script>
 
 <textarea bind:value bind:this={area}></textarea>

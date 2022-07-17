@@ -3,42 +3,54 @@
   export let collection_tags;
 	function new_tag (tag) {
 		collection_tags = [tag, ...collection_tags];
-	  card.tags = tag+', '+card.tags
+                has_tag_map[tag] = true;
 	}
-  let tags_list = card.tags.split(',')
-  $: card.tags = tags_list.join(', ')
+  let has_tag_map = collection_tags.reduce((running_map, tag) => {running_map[tag] = false; return running_map}, (new Map()));
+  const tl = card.tags==='' ? [] : card.tags.split(',')
+  for (tag in tl) {
+          has_tag_map[tag] = true
+  }
+  $: tags_list = Object.entries(has_tag_map).filter(pair => pair[1]).map(pair => pair[0])
+  $: card.tags = tags_list.join(', ');
+
+  let search = '';
 </script>
 
 <div id='tags_bar'>
   <p id='tags_list'><b>{card.tags}</b></p>
-	<div id='clickers'>
-  	<select bind:value={tags_list} name="tags" multiple>
-    	{#each collection_tags as tag}
-	    <option selected={tags_list.includes(tag)} value={tag}> {tags_list.includes(tag)===true ? '✓' : ''}
-				{tag}</option>
-	    {/each}
-    </select>
-	  <p><span id='control_click'>Ctrl+Click to select multiple tags<br></span>
-	    <button type='button' on:click={() => {new_tag(prompt('new tag'))}}>new tag
-	    </button>
-	  </p>		
-	</div>
+  <button type='button' on:click={() => {new_tag(prompt('new tag'))}}>+ new tag </button>&nbsp;
+  <input type='search' bind:value={search} placeholder='search' />
 
+{#each Object.keys(has_tag_map).reverse() as tag}
+        {#if tag.includes(search)}
+            <label> 
+                <input type='checkbox' bind:checked={has_tag_map[tag]}  />
+                {tag}
+            </label>
+        {/if}
+{/each}
 </div>
+
+
+
+
 
 <style>
 	#tags_bar {
 		border: 1px solid black;
 		background-color: #eee;
 		margin: auto 0 15px;
-		display: grid;
+		display: flex;
+                flex-flow: row wrap;
 		padding: 10px;
-	}
-	#clickers {
-		display: grid;
-		grid-template-columns: 75% 25%;
 	}
 	p {
 		text-align: center;
+                width: 100%;
 	}
+        label {
+                margin: 8px;
+
+        }
+
 </style>
