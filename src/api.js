@@ -1,6 +1,7 @@
 import { local_unix_day } from './unix_day.js'
 // export error variables so we can show the
 // user if and how the server fails
+let api_url = "http://api.vinca.study/";
 let error = {active: false, code: null, message: ''};
 
 function random_id() {
@@ -21,7 +22,7 @@ function default_options() {
 // it specifies the date and the number of seconds that it took to edit or review
 
 async function get_users_list() {
-        var url = new URL('http://localhost:8000/auth/users_list');
+        var url = new URL(api_url + 'auth/users_list');
         var options = default_options()
         options.method = 'GET';
         const response = await fetch(url, options);
@@ -29,7 +30,7 @@ async function get_users_list() {
 }
 
 async function get_token(username, password) {
-        var url = new URL('http://localhost:8000/auth/token');
+        var url = new URL(api_url + 'auth/token');
         var fd = new FormData();
         fd.append('username', username)
         fd.append('password', password)
@@ -57,7 +58,7 @@ async function get_token(username, password) {
 }
 
 async function register_and_get_token(username, password) {
-        var url = new URL('http://localhost:8000/auth/register');
+        var url = new URL(api_url + 'auth/register');
         var options = default_options()
         options.body = JSON.stringify( {username: username, password: password} )
         var success = null;
@@ -80,7 +81,7 @@ async function register_and_get_token(username, password) {
 
 
 async function commit_changes(card, seconds = 0) {
-  const url = new URL('http://localhost:8000/commit_card');
+  const url = new URL(api_url + 'commit_card');
   const metadata = {seconds: seconds, date: local_unix_day()}
   const payload = {
           card: card,
@@ -120,7 +121,7 @@ async function commit_grade(card_id, grade, seconds) {
     const payload = {review: review_params, metadata: metadata}
     let options = default_options();
     options.body = JSON.stringify( payload );
-    var url = new URL('http://localhost:8000/review');
+    var url = new URL(api_url + 'review');
     fetch(url, options)
       .then(handle_error_response)
       .catch(fetch_error_handler);
@@ -129,7 +130,7 @@ async function commit_grade(card_id, grade, seconds) {
 async function upload_media(content, base64=true) {
         let options = default_options();
         options.body = JSON.stringify( {content: content, base64: base64} );
-        var url = new URL('http://localhost:8000/upload_media')
+        var url = new URL(api_url + 'upload_media')
         var media_id = null;
         const r = await fetch(url, options)
           .then(handle_error_response)
@@ -148,7 +149,7 @@ async function set_guest_user() {
 
 async function fetch_cardlist(filters, sort) {
         var options = default_options();
-        const url = new URL('http://localhost:8000/cardlist');
+        const url = new URL(api_url + 'cardlist');
         const faux_filters = {deleted: null};
         const payload = {crit: {sort: sort}, filters: filters}
         options.body = JSON.stringify( payload )
@@ -159,7 +160,7 @@ async function fetch_cardlist(filters, sort) {
 }
 
 async function hypothetical_due_dates(card_id, date) {
-        const url = new URL("http://localhost:8000/hypothetical_due_dates")
+        const url = new URL(api_url + 'hypothetical_due_dates')
         url.search = new URLSearchParams({card_id: card_id, date: date})
         var options = default_options()
         options.method = 'GET';
@@ -169,7 +170,7 @@ async function hypothetical_due_dates(card_id, date) {
 }
 
 async function get_collection_tags() {
-        const url = new URL("http://localhost:8000/collection_tags")
+        const url = new URL(api_url + 'collection_tags')
         var options = default_options()
         options.method = 'GET';
         const response = await fetch(url, options);
@@ -186,7 +187,7 @@ async function fetchWithAuthentication(url) {
 
 async function getProtectedImage( media_id) {
   // Fetch the image.
-  const url = ("http://localhost:8000/get_media?media_id=" + media_id)
+  const url = (api_url + 'get_media?media_id=' + media_id)
   const response = await fetchWithAuthentication( url );
 
   // Create an object URL from the data.
@@ -203,14 +204,14 @@ async function getOcclusionData( media_id ) {
         // We can do this because occlusion cards don't need back images
         
         // Fetch the image.
-        const url = ("http://localhost:8000/get_occlusion_data?media_id=" + media_id)
+        const url = (api_url + 'get_occlusion_data?media_id=' + media_id)
         const response = await fetchWithAuthentication( url );
         const json = await response.json();
         return JSON.parse(json)
 }
 
 async function purge(filters) {
-        const url = new URL("http://localhost:8000/purge");
+        const url = new URL(api_url + 'purge');
         var options = default_options();
         options.body = JSON.stringify( filters );
         const response = await fetch(url, options);
