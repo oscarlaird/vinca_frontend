@@ -1,7 +1,7 @@
 import { local_unix_day } from './unix_day.js'
 // export error variables so we can show the
 // user if and how the server fails
-let api_url = "api.vinca.study/";
+let api_url = "https://api.vinca.study/";
 let error = {active: false, code: null, message: ''};
 
 function random_id() {
