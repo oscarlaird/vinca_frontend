@@ -44,10 +44,6 @@
     font-family: "Times New Roman", Times, Serif;
     padding: 24px;
   }
-  @font-face {
-    font-family: "Times New Roman";
-    src: url(times-new-roman.ttf);
-  }
   #due_count {
     font-size: 1em;
     position: absolute;
