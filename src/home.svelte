@@ -49,7 +49,7 @@
         <a class='login_button' on:click={() => {username = 'none'}}>switch account</a>
 {/if}
 
-<a style="float: right; position: relative;">Links</a>
+<a style="float: right; position: relative;" href='http://docs.vinca.study/links.html'>Links</a>
 
 <div id='major_buttons'>
 <ReviewButton on:click={() => {state.reviewing=true}} bind:due_count></ReviewButton>

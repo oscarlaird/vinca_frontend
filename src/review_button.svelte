@@ -10,7 +10,7 @@
 
 <button type='button' on:click={forward}>
   <div id='review_text'>
-    Review <span style="font-size: 100%;">🕮 </span>
+    Review <span style="font-size: 100%;">&#128366</span>
   </div>
   <div id='due_count'>{due_count_plus} cards due</div>
 </button>
@@ -19,14 +19,23 @@
   button {
     color: green;
     border: 2px green solid;
+    position: relative;
     margin: 6px;
   }
   #review_text {
     font-size: 2em;
     font-family: "Times New Roman", Times, Serif;
-    padding: 0.5em;
+    padding: 24px;
+  }
+  @font-face {
+    font-family: "Times New Roman";
+    src: url(times-new-roman.ttf);
   }
   #due_count {
     font-size: 1em;
+    position: absolute;
+    display: block;
+    width: 100%;
+    bottom: 6px;
   }
 </style>
