@@ -19,5 +19,6 @@
 <style>
 	label {
 		margin: 10px;
+                min-width: 50px;
 	}
 </style>

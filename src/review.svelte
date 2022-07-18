@@ -15,10 +15,6 @@
     let flipped = preview; //we are done clicking and should see the grading buttons
     let verses_line_no = 1;
     let verses_lines = card.front_text.split('\n')
-    $: display_back_text = (card.card_type!='verses' && flipped) ? 'block' : 'none';
-    $: flipper_button_display = flipped ? 'none' : 'block';
-    $: grade_buttons_display = flipped && !preview ? 'grid' : 'none';
-    $: manage_buttons_display = flipped ? 'grid' : 'none';
     let hypo_due_dates = {again: 0, hard: 10, good: 15, easy: 25};
     onMount(async () => {
             hypo_due_dates = await hypothetical_due_dates(card.id, current_time);
@@ -118,22 +114,25 @@
 <body on:click={default_action}>
 
 <div id='buttons_bar'>
-<div style='display: {manage_buttons_display}' id='manage_buttons_bar'>
-<button class='manage_button' on:click={edit}>✍ <u>e</u>dit</button>
-<button class='manage_button' on:click={quit}>⏎ {@html preview ? '<u>b</u>ack' : '<u>q</u>uit'}</button>
-<button class='manage_button' on:click={delete_card}>✕ <u>d</u>elete</button>
-</div>
-
-<div style='display: {grade_buttons_display}' id='grade_buttons_bar'>
-        {#if hypo_due_dates}
-	{#each [['again',1], ['hard',2], ['good',3], ['easy',4]] as [grade_val, num]}
-                <button class='grade_button' on:click|stopPropagation={() => grade(grade_val)}>
-			{grade_val} ({num})<br>
-                        <span style='font-size: 12px'>+{Math.floor(hypo_due_dates[grade_val]) - Math.floor(current_time)} days</span>
-  	</button>
-	{/each}
-        {/if}
-</div>
+{#if flipped}
+        <div id='manage_buttons_bar'>
+        <button class='manage_button' on:click={edit}><u>e</u>dit</button>
+        <button class='manage_button' on:click={quit}>⏎ {@html preview ? '<u>b</u>ack' : '<u>q</u>uit'}</button>
+        <button class='manage_button' on:click={delete_card}>✕ <u>d</u>elete</button>
+        </div>
+{/if}
+{#if flipped && !preview}
+        <div id='grade_buttons_bar'>
+                {#if hypo_due_dates}
+                {#each [['again',1], ['hard',2], ['good',3], ['easy',4]] as [grade_val, num]}
+                        <button class='grade_button' on:click|stopPropagation={() => grade(grade_val)}>
+                                {grade_val} ({num})<br>
+                                <span style='font-size: 12px'>+{Math.floor(hypo_due_dates[grade_val]) - Math.floor(current_time)} days</span>
+                </button>
+                {/each}
+                {/if}
+        </div>
+{/if}
 </div>
 
 {#if card.card_type==='basic' || preview}
@@ -145,15 +144,19 @@
 {/if}
 
 <br><br>
-<button id='flipper' type='button' on:click={flip} style='display: {flipper_button_display}' autofocus>
-        {card.card_type==='verses' ? 'Next Line' : 'Flip'}<br>
-	<span style='font-size: 14px'>(click anywhere)</span>
-</button>
+{#if !flipped}
+        <button id='flipper' type='button' on:click={flip} autofocus>
+                {card.card_type==='verses' ? 'Next Line' : 'Flip'}<br>
+                <span style='font-size: 14px'>(click anywhere)</span>
+        </button>
+{/if}
 
-<div id='backside' style='display: {display_back_text}'>
-	<br>
-{@html card.back_text.replace('\n','<br>')}
-</div>
+{#if card.card_type!='verses' && flipped}
+        <div id='backside'>
+                <br>
+                {@html card.back_text.replace('\n','<br>')}
+        </div>
+{/if}
 
 {card.tags}
 <hr>
@@ -182,19 +185,22 @@
 		display: inline;
                 max-width: 500px;
 	}
-	#grade_buttons_bar {
-		grid-template-columns: auto auto auto auto;
-                gap: 10px;
-	}
 	#buttons_bar {
-                width: 80%;
-		position: fixed;
-		bottom: 10px;
-                margin: auto 12% auto 8%;
+                width: 94vw;
+                bottom: 10px;
+                position: fixed;
+                left: 3vw;
+	}
+	#grade_buttons_bar {
+                display: grid;
+		grid-template-columns: auto auto auto auto;
+                gap: 1%;
 	}
 	#manage_buttons_bar {
-		grid-template-columns: auto auto auto;
-                gap: 10px;
+                display: grid;
+                grid-template-columns: auto auto auto;
+                gap: 1%;
+
 	}
 	.grade_button {
 	}

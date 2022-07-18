@@ -133,7 +133,6 @@
   body {
     background-color: #CAE3CD;
     border: 1px solid black;
-    margin: 0 auto;
     min-height: 100%;
     height: fit-content;
   }
