@@ -10,8 +10,8 @@
 
 <button type='button' on:click={forward}>
   <div id='review_text'>
-          Review &nbsp;
-    <svg id='svg_lamp' viewBox='30 30 280 340'>
+          Review
+    <svg id='svg_lamp' viewBox='10 30 300 330'>
           <path
              style="fill:none;stroke:#008000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-miterlimit:4;stroke-dasharray:none"
              d="m 168.08981,266.41346 0,-196.733878"
