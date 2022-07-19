@@ -1,11 +1,11 @@
 <script>
+  import { collection_tags } from './collection_tags.js';
   export let card;
-  export let collection_tags;
 	function new_tag (tag) {
-		collection_tags = [tag, ...collection_tags];
+                collection_tags.update((tags) => [tag, ...tags]);
                 has_tag_map[tag] = true;
 	}
-  let has_tag_map = collection_tags.reduce((running_map, tag) => {running_map[tag] = false; return running_map}, (new Map()));
+  let has_tag_map = $collection_tags.reduce((running_map, tag) => {running_map[tag] = false; return running_map}, (new Map()));
   const tl = card.tags==='' ? [] : card.tags.split(',')
   for (tag in tl) {
           has_tag_map[tag] = true

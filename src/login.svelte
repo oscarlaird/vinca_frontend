@@ -1,7 +1,7 @@
 <script>
         import { onMount } from 'svelte'
         import { get_users_list, get_token, register_and_get_token } from './api.js';
-        export let username;
+        import { username } from './state.js'
 	let users = [];
         let typed_username = '';
 	let password = '';
@@ -22,9 +22,9 @@
         async function login() {
                 const success = await get_token(typed_username, password);
                 if (success) {
-                  username = typed_username;
+                  username.set(typed_username);
                 } else {
-                  //failed_login = 'incorrect password';
+                  failed_login = true;
                   password = '';
                   password_box.focus()
                 }
@@ -32,7 +32,7 @@
         async function register() {
                 const success = await register_and_get_token(typed_username, password)
                 if (success) {
-                        username = typed_username
+                        username.set(typed_username)
                 } else {
                         alert('registration failed')
                 }
@@ -44,20 +44,31 @@
                         register()
                 }
         }
+        let submit_button;
+        function handleKeydown(event) {
+                if (event.key!=='Enter') return;
+                event.preventDefault()
+                submit_button.click()
+        }
+
 </script>
+
 
 <body>
 {warning}
 <input class='entry' bind:this={username_box} type='text' placeholder='Username' bind:value={typed_username}>
-<input class='entry' bind:this={password_box} type='password' placeholder='Password' bind:value={password}>
-{#if register_or_login==='login' && failed_login}<center style="color: darkred">Incorrect Password</center> {/if}
+<input class='entry' bind:this={password_box} type='password' placeholder='Password' bind:value={password} on:keydown={handleKeydown}>
+
+{#if register_or_login==='login' && failed_login}
+        <center style="color: darkred">Incorrect Password</center>
+{/if}
 
 <div id='bottom_row'>
 	<label><input type='radio' name='rol' value='login' bind:group={register_or_login}> LOGIN</label>
 	<label><input type='radio' name='rol' value='register' bind:group={register_or_login}> REGISTER</label>
-        <input type='submit' value={register_or_login} disabled={!submit_possible} style:border={submit_possible ? '1px solid black' : ''} on:click={submit}>
+        <input type='submit' bind:this={submit_button} value={register_or_login} disabled={!submit_possible} style:border={submit_possible ? '1px solid black' : ''} on:click={submit}>
 </div>
-<br><center><button type='button' on:click={() => {username = 'guest'}}>continue as guest</button></center>
+<br><center><button type='button' on:click={() => {username.set('guest')}}>continue as guest</button></center>
 </body>
 
 <style>

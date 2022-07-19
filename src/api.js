@@ -1,4 +1,6 @@
 import { local_unix_day } from './unix_day.js'
+import { sort, filters } from './filters.js'
+import { get } from 'svelte/store'
 // export error variables so we can show the
 // user if and how the server fails
 let api_url = "https://api.vinca.study/";
@@ -24,6 +26,7 @@ function default_options() {
 async function get_users_list() {
         var url = new URL(api_url + 'auth/users_list');
         var options = default_options()
+        //options.headers = {}
         options.method = 'GET';
         const response = await fetch(url, options);
         return response.json();
@@ -140,23 +143,46 @@ async function upload_media(content, base64=true) {
         return media_id
 }
 
-async function set_guest_user() {
-        if (!window.localStorage.getItem('username')) {
-                window.localStorage.setItem('username','guest')
-                window.localStorage.setItem('access_token','guest123')
-        }
+export async function get_next_two_due() {
+        var options = default_options();
+        const url = new URL(api_url + 'next_two_due');
+        const payload = {crit: {sort: get(sort)}, filters: get(filters)}
+        options.body = JSON.stringify( payload )
+        const response = await fetch(url, options)
+        return response.json()
 }
 
-async function fetch_cardlist(filters, sort) {
+export async function get_due_count() {
+        var options = default_options();
+        const url = new URL(api_url + 'due_count');
+        const payload = {filters: get(filters)}
+        options.body = JSON.stringify( payload )
+        const response = await fetch(url, options)
+        return response.json()
+}
+
+export async function get_created_count() {
+        var options = default_options();
+        const url = new URL(api_url + 'created_count');
+        const payload = {filters: get(filters)}
+        options.body = JSON.stringify( payload )
+        const response = await fetch(url, options)
+        return response.json()
+}
+
+async function fetch_cardlist() {
         var options = default_options();
         const url = new URL(api_url + 'cardlist');
-        const faux_filters = {deleted: null};
-        const payload = {crit: {sort: sort}, filters: filters}
+        const payload = {crit: {sort: get(sort)}, filters: get(filters)}
         options.body = JSON.stringify( payload )
         const response = await fetch(url, options)
               .then(handle_error_response)
               .catch(fetch_error_handler);
-        return response.json();
+        if (response && response.ok) {
+                return response.json();
+        } else {
+                throw new Error('Could not retrieve cards from the server.')
+        }
 }
 
 async function hypothetical_due_dates(card_id, date) {
@@ -217,4 +243,4 @@ async function purge(filters) {
         const response = await fetch(url, options);
 }
 
-export { random_id, getOcclusionData, purge, get_collection_tags, hypothetical_due_dates, register_and_get_token, fetch_cardlist, set_guest_user, get_users_list, upload_media, commit_changes, commit_grade, error, getProtectedImage, get_token }
+export { random_id, getOcclusionData, purge, get_collection_tags, hypothetical_due_dates, register_and_get_token, fetch_cardlist, get_users_list, upload_media, commit_changes, commit_grade, error, getProtectedImage, get_token }

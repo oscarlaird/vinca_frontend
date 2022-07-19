@@ -1,80 +1,75 @@
 <script>
   import { local_unix_day } from './unix_day.js';
   import { commit_changes } from './api.js';
+  import { info } from './info.js';
+  import { card_to_edit, card_to_preview } from './state.js';
   async function toggle_delete() {
           card.visibility = (card.visibility==='visible' ? 'deleted' : 'visible');
           //notify API
           commit_changes(card);
-          card_edited_alert = true;
 
   }
   function preview() {
-          state['card_to_preview'] = card;
-          state['preview_mode'] = true;
+          card_to_preview.set(card);
   }
   function edit() {
-          state['card_to_edit'] = card;
-          state['edit_mode'] = true;
+          card_to_edit.set(card);
   }
   export let card;
-  export let card_edited_alert;
-  export let state;
-  export let info; // We need to know the sort criterion so that
   let current_time = local_unix_day();
   $: text_decoration = (card.visibility==='deleted' ? 'line-through' : '');
   $: is_due = card.due_date < current_time;
   $: due_alert = (is_due && card.visibility==='visible' ? 'inline' : 'none');
-  $: extra_info = get_extra_info(info);
-  function get_extra_info(info) {
-          switch (info) {
+  $: extra_info = get_extra_info($info);
+  function get_extra_info($info) {
+          switch ($info) {
                   case '':
                           return ''
                   case 'create_date':
                           return 'Created <b><mark>' +
-                                  Math.trunc(current_time - card[info]) +
+                                  Math.trunc(current_time - card[$info]) +
                                   '</mark></b> days ago';
                   case 'due_date':
                           return 'Due in <b><mark>' +
-                                  Math.trunc(card[info] - current_time) +
+                                  Math.trunc(card[$info] - current_time) +
                                   '</mark></b> days';
                   case 'last_review_date':
                           return 'Last reviewed <b><mark>' +
-                                  Math.trunc(current_time - card[info]) + 
+                                  Math.trunc(current_time - card[$info]) + 
                                   '</mark></b> days ago';
                   case 'last_edit_date':
                           return 'Last edited <b><mark>' +
-                                  Math.trunc(current_time - card[info]) + 
+                                  Math.trunc(current_time - card[$info]) + 
                                   '</mark></b> days ago';
                   case 'review_seconds':
                           return 'Spent <b><mark>' +
-                                  Math.floor(card[info]) + 
+                                  Math.floor(card[$info]) + 
                                   '</mark></b> seconds reviewing';
                   case 'edit_seconds':
                           return 'Spent <b><mark>' +
-                                  Math.floor(card[info]) + 
+                                  Math.floor(card[$info]) + 
                                   '</mark></b> seconds editing';
                   case 'total_seconds':
                           return 'Spent <b><mark>' +
-                                  Math.floor(card[info]) + 
+                                  Math.floor(card[$info]) + 
                                   '</mark></b> seconds';
                   case 'card_type':
                           return '<b><mark>' +
-                                  card[info] + 
+                                  card[$info] + 
                                   '</mark></b>';
                   case 'tags':
                           return 'tags: <b><mark>' +
-                                  card[info] + 
+                                  card[$info] + 
                                   '</mark></b>';
                   case 'merit':
                           return '<b><mark>' +
-                                  card[info] + 
+                                  card[$info] + 
                                   '</mark></b>';
                   default:
                           return ''
           }
   }
 
-  let card_container;
 </script>
 
 <div class='card_container'>
@@ -92,7 +87,7 @@
   .card_container {
     border: 2px solid black;
     padding: 6px;
-    margin: 5px;
+    margin: 5px 3px;
     background-color: rgba(256,256,256,0.3);
   }
   .front_text {

@@ -4,10 +4,10 @@
     import { unix_seconds, local_unix_day } from './unix_day.js';
     import { dummy_card } from './card_templates.js'
     import { hypothetical_due_dates, commit_grade, commit_changes, getProtectedImage } from './api.js';
-    export let card;
-    export let preview = false;
-    export let state;
-    export let card_edited_alert;
+    import { card_to_edit, card_to_review, card_to_preview, review_start } from './state.js';
+    import { next_two_due } from './filters.js'
+    let card = $card_to_preview || $card_to_review
+    let preview = $card_to_preview!=null;
     let current_time = local_unix_day();
     let review_stop;
     let back_img;
@@ -18,7 +18,7 @@
     let hypo_due_dates = {again: 0, hard: 10, good: 15, easy: 25};
     onMount(async () => {
             hypo_due_dates = await hypothetical_due_dates(card.id, current_time);
-            state.review_start = unix_seconds();
+            review_start.set(unix_seconds());
             if (card.front_image_id!=0) {
                     const image_url = await getProtectedImage(card.front_image_id);
                     front_img.src = image_url;
@@ -31,25 +31,17 @@
     function delete_card() {
             card.visibility = 'deleted';
             commit_changes(card);
-            card_edited_alert = true;
             quit();
     }
     function quit() {
-            if (state.preview_mode) {
-                    state.preview_mode = false;
-                    state.card_to_preview = null;
+            if ($card_to_preview) {
+                    card_to_preview.set(null);
             } else {
-                    state.reviewing = false;
-                    state.card_to_review = null;
+                    card_to_review.set(null);
             }
     }
     function edit() {
-            state.edit_mode = true;
-            state.card_to_edit = card;
-            if (state.preview_mode) {
-                    quit()
-            }
-
+            card_to_edit.set(card);
     }
     async function grade(grade) {
             // postpone the card while we figure out what the
@@ -58,7 +50,7 @@
             card.due_date = (current_time + 1);
             
             review_stop = unix_seconds();
-            var elapsed = review_stop - state.review_start;
+            var elapsed = review_stop - $review_start;
 
             await commit_grade(card.id, grade, elapsed);
             card.due_date = hypo_due_dates[grade];
@@ -66,8 +58,7 @@
 
 
             // TODO set the due_date equal to the hypothetical and push to the server
-            state.card_to_review = null;
-            flipped = false;
+            card_to_review.set($next_two_due[1]);
     }
     function flip() {
             if (card.card_type==='basic' || card.card_type==='occlusion') {
@@ -114,14 +105,12 @@
 <body on:click={default_action}>
 
 <div id='buttons_bar'>
-{#if flipped}
+{#if flipped && !preview}
         <div id='manage_buttons_bar'>
         <button class='manage_button' on:click={edit}><u>e</u>dit</button>
         <button class='manage_button' on:click={quit}>⏎ {@html preview ? '<u>b</u>ack' : '<u>q</u>uit'}</button>
         <button class='manage_button' on:click={delete_card}>✕ <u>d</u>elete</button>
         </div>
-{/if}
-{#if flipped && !preview}
         <div id='grade_buttons_bar'>
                 {#if hypo_due_dates}
                 {#each [['again',1], ['hard',2], ['good',3], ['easy',4]] as [grade_val, num]}
@@ -145,7 +134,7 @@
 
 <br><br>
 {#if !flipped}
-        <button id='flipper' type='button' on:click={flip} autofocus>
+        <button id='flipper' type='button' on:click={flip} >
                 {card.card_type==='verses' ? 'Next Line' : 'Flip'}<br>
                 <span style='font-size: 14px'>(click anywhere)</span>
         </button>
@@ -162,10 +151,10 @@
 <hr>
 
 {#if card.back_image_id!=0 && flipped && !card.card_type==='occlusion'}
-        <center><img bind:this={back_img} /></center>
+        <center><img bind:this={back_img} alt='back' /></center>
 {/if}
 {#if card.front_image_id!=0 && (card.back_image_id===0 || preview || !flipped) && !card.card_type==='occlusion'}
-        <center><img bind:this={front_img} /></center>
+        <center><img bind:this={front_img} alt='front' /></center>
 {/if}
 
 

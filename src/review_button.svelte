@@ -1,11 +1,11 @@
 <script>
+  import { due_count } from './filters.js';
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   function forward() {
           dispatch('click');
   }
-  export let due_count = 0;
-  $: due_count_plus = due_count + (due_count>=50 ? '+' : '');
+  $: due_count_plus = $due_count + (due_count>=50 ? '+' : '');
 </script>
 
 <button type='button' on:click={forward}>
@@ -103,7 +103,7 @@
              style="opacity:1;fill:#008000;fill-opacity:1;stroke:#008000;stroke-width:1.07730699;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </svg>
   </div>
-  <div id='due_count'>{due_count_plus} cards due</div>
+          <div id='due_count'>{due_count_plus} cards due</div>
 </button>
 
 
@@ -111,16 +111,15 @@
   #svg_lamp {
     display: inline;
     height: 2em;
+    vertical-align: middle;
     /*
     border: 1px solid black;
     */
-    vertical-align: middle;
   }
   button {
     color: green;
     border: 2px green solid;
     position: relative;
-    margin: 6px;
   }
   #review_text {
     font-size: 2em;

@@ -7,39 +7,39 @@
   import TagsEditor from './tags_editor.svelte';
   import EditHeader from './edit_header.svelte';
   import ImageOccluder from './image_occluder.svelte';
-  export let collection_tags;
-  export let card;
-  export let card_edited_alert;
-  export let state;
-  export let cached_cards;
+  import { card_to_edit, card_to_preview, review_start } from './state.js';
+  let card = {...$card_to_edit}; // copy into card
+  let tmp_card = {...$card_to_edit}; // copy into tmp card
+  $: placeholder = get_placeholder(tmp_card.card_type)
+  const start_time = unix_seconds();
+
   let occlusion_data = {box:{width:500,height:500}, hide_all:true, rectangles:[]}
   onMount(async () => {
           if (card.id!=0 && card.card_type==='occlusion') {
                   occlusion_data = await getOcclusionData(card.back_image_id)
           }
   });
-  let tmp_card = {...card}; // copy into tmp card
-  $: placeholder = get_placeholder(tmp_card.card_type)
-  const start_time = unix_seconds();
+
   function preview() {
-          state.preview_mode = true;
-          state.card_to_preview = tmp_card;
+          card_to_preview.set(null);
   }
+
   function cancel() {
           // if it was a new card (designated by id=0) we want to permanently delete it
           if (card.id===0) {
                   card.visibility = 'purged'
           }
-          state['edit_mode'] = false;
+          card_to_edit.set(null);
 
   }
+
   async function save() {
           const end_time = unix_seconds()
           var elapsed = end_time - start_time;
           // increment review_start time by the seconds we spend editing the card
           // this will make the reviewing_time be less so that we don't
           // double count the time as both editing and reviewing
-          state.review_start = state.review_start + elapsed;
+          review_start.set($review_start + elapsed);
           // copy over values from the tmp card
           for (var key in tmp_card) {
                   card[key] = tmp_card[key];
@@ -50,8 +50,8 @@
                   // to report this as 5 seconds per card so that I do not overcount
                   elapsed = elapsed / occlusion_data.rectangles.length
                   //const siblings = // fetch_cardlist back_image_id===card.back_image_id (old)
-                  // replace siblings with already cached_cards
-                  // cached_cards.push (siblings where not already in cached_cards)
+                  // replace siblings with already cards
+                  // cards.push (siblings where not already in cards)
                   // occl_cards = siblings.
 
                   for (let rect of occlusion_data.rectangles) {
@@ -59,8 +59,8 @@
                                   // delete existing occlusion cards
                                   // update the database via api
                                   commit_changes({id: rect.id, visibility: 'purged'})
-                                  // update cached_cards locally
-                                  const cached_card = cached_cards.find((elem) => elem.id===rect.id)
+                                  // update cards locally
+                                  const cached_card = cards.find((elem) => elem.id===rect.id)
                                   cached_card.visibility = 'purged';
                           }
                           if (rect.id===0 && !rect.deleted) {
@@ -68,7 +68,7 @@
                                   let new_card = {...card} // copy existing occlusion card
                                   new_card.id = random_id()
                                   rect.id = new_card.id // NB: We are building up occlusion data
-                                  cached_cards.push(new_card);
+                                  cards.push(new_card);
                                   // send it to the db
                                   commit_changes(new_card, elapsed)
                           }
@@ -83,7 +83,7 @@
                           // update the database
                           commit_changes({id: rect.id, back_image_id: media_id})
                           // locally update cached cards
-                          const cached_card = cached_cards.find((elem) => elem.id===rect.id)
+                          const cached_card = cards.find((elem) => elem.id===rect.id)
                           cached_card.back_image_id = media_id
                   }
                   // finally if our original card was one of these we should push it
@@ -93,8 +93,6 @@
                   // API call to save edits to the server
                   if (card.id===0) {
                       card.id = random_id() 
-                      cached_cards.push(card);
-                      cached_cards = cached_cards;
                   }
                   commit_changes(card, elapsed);
                   quit()
@@ -102,9 +100,7 @@
 
   }
   function quit() {
-          state.edit_mode = false;
-          state.card_to_edit = null;
-          card_edited_alert = true;
+          card_to_edit.set(null);
   }
 
   
@@ -131,6 +127,6 @@
 <hr>
 {/if}
 
-<TagsEditor bind:collection_tags bind:card={tmp_card}></TagsEditor>
+<TagsEditor bind:card={tmp_card}></TagsEditor>
 
 </body>

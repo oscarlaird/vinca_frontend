@@ -1,10 +1,10 @@
 <script>
+  import { created_count } from './filters.js';
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   function forward() {
           dispatch('click');
   }
-  export let created_count;
 </script>
 
 <button type='button' on:click={forward}>
@@ -21,7 +21,7 @@
      style="fill:purple" />
 </svg>
   </div>
-  <div id='due_count'>{created_count} created today</div>
+  <div id='due_count'>{$created_count} created today</div>
 </button>
 
 <style>
@@ -37,7 +37,6 @@
     color: purple;
     border: 2px purple solid;
     position: relative;
-    margin: 6px;
   }
   #create_text {
     font-size: 2em;

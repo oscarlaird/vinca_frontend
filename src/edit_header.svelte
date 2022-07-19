@@ -11,14 +11,15 @@
 
 <center>
         <InfoTooltip text="<b>Basic</b>:  class question and answer card <br><br>
-                <b>Verses</b>: tests you line by line (useful for poetry and oratory) <br><br>
-                <b>Occlusion</b>: generate several cards by covering up parts of a map or diagram (useful for geography or anatomy)" />
+                <b>Verses</b>: tests you line by line (useful for poetry) <br><br>
+                <b>Occlusion</b>: generate several cards by covering up parts of a map or diagram (useful for geography)" />
+
+Card type:
+<select style:background-color={'white'} bind:value={card.card_type}>
 {#each card_types as card_type}
-<label>
-  <input type="radio" name="card_type" bind:group={card.card_type} value={card_type} checked={card.card_type===card_type}>
-  {card_type}
-</label>
+  <option>{card_type}</option>
 {/each}
+</select>
 
 
 <button class='submit_button' on:click={cancel}>cancel</button>
@@ -27,10 +28,9 @@
 
 
 <InfoTooltip text="Quantify in minutes the worth of remembering this knowledge.<br><br>
-        This is difficult.<br><br>
         This lets you see if the time spent studying a card has been worthwhile. <br><br>
         It also lets you sort your cards to find the best ones." />
-Merit
+Merit:
 <input type=number bind:value={card.merit} style:width='50px' min=1 max=60>
 
 

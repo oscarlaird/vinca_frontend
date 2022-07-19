@@ -4,9 +4,7 @@
 	import Image from './image_picker.svelte';
 	export let text;
         export let image_id;
-        export let audio_id;
-	export let audio_file;
-	export let image_file;
+        //export let audio_id;
 	export let placeholder;
         export let image_picker_disabled;
 </script>
