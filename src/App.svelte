@@ -12,7 +12,7 @@
 </script>
 
 <body>
-{#key ($card_to_review, $username)}
+{#key [$card_to_review, $username]}
   <svelte:component this={component} />
 {/key}
 </body>

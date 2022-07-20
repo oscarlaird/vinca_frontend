@@ -37,14 +37,6 @@ Merit:
 </center>
 
 <style>
-        input[type='radio'] {
-                transform: scale(1.3)
-        }
-	label {
-		display: inline;
-		padding: 12px;
-		font-size: 1.3em;
-	}
 	.submit_button {
 		font-size: 1.2em;
 		padding: 18px;
