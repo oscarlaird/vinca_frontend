@@ -1,5 +1,5 @@
 <script>
-  import { due_count } from './filters.js';
+  import { due_count } from './api.js';
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
   function forward() {

@@ -3,9 +3,8 @@
     import { onMount } from 'svelte';
     import { unix_seconds, local_unix_day } from './unix_day.js';
     import { dummy_card } from './card_templates.js'
-    import { hypothetical_due_dates, commit_grade, commit_changes, getProtectedImage } from './api.js';
+    import { next_two_due, hypothetical_due_dates, commit_grade, commit_changes, getProtectedImage } from './api.js';
     import { card_to_edit, card_to_review, card_to_preview, review_start } from './state.js';
-    import { next_two_due } from './filters.js'
     let card = $card_to_preview || $card_to_review
     let preview = $card_to_preview!=null;
     let current_time = local_unix_day();

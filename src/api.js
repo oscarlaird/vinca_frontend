@@ -1,12 +1,12 @@
 import { local_unix_day } from './unix_day.js'
 import { sort, filters } from './filters.js'
-import { get } from 'svelte/store'
+import { derived, get } from 'svelte/store'
+import { card_to_review } from './state.js'
 // export error variables so we can show the
 // user if and how the server fails
 let api_url = "https://api.vinca.study/";
-let error = {active: false, code: null, message: ''};
 
-function random_id() {
+export function random_id() {
         // returns a random 15 digit id
         // We don't want to go beyond this because javascript only supports 56bit ints.
         return String(Math.floor(Math.random() * 1000000000000000))
@@ -23,7 +23,7 @@ function default_options() {
 // metadata is needed for edits and reviews
 // it specifies the date and the number of seconds that it took to edit or review
 
-async function get_users_list() {
+export async function get_users_list() {
         var url = new URL(api_url + 'auth/users_list');
         var options = default_options()
         //options.headers = {}
@@ -32,7 +32,7 @@ async function get_users_list() {
         return response.json();
 }
 
-async function get_token(username, password) {
+export async function get_token(username, password) {
         var url = new URL(api_url + 'auth/token');
         var fd = new FormData();
         fd.append('username', username)
@@ -60,7 +60,7 @@ async function get_token(username, password) {
         }
 }
 
-async function register_and_get_token(username, password) {
+export async function register_and_get_token(username, password) {
         var url = new URL(api_url + 'auth/register');
         var options = default_options()
         options.body = JSON.stringify( {username: username, password: password} )
@@ -83,7 +83,7 @@ async function register_and_get_token(username, password) {
 }
 
 
-async function commit_changes(card, seconds = 0) {
+export async function commit_changes(card, seconds = 0) {
   const url = new URL(api_url + 'commit_card');
   const metadata = {seconds: seconds, date: local_unix_day()}
   const payload = {
@@ -115,7 +115,7 @@ function handle_error_response(response) {
     }
 }
 
-async function commit_grade(card_id, grade, seconds) {
+export async function commit_grade(card_id, grade, seconds) {
     const review_params = {
             card_id: card_id,
             grade: grade,
@@ -130,7 +130,7 @@ async function commit_grade(card_id, grade, seconds) {
       .catch(fetch_error_handler);
 }
 
-async function upload_media(content, base64=true) {
+export async function upload_media(content, base64=true) {
         let options = default_options();
         options.body = JSON.stringify( {content: content, base64: base64} );
         var url = new URL(api_url + 'upload_media')
@@ -170,7 +170,7 @@ export async function get_created_count() {
         return response.json()
 }
 
-async function fetch_cardlist() {
+export async function fetch_cardlist() {
         var options = default_options();
         const url = new URL(api_url + 'cardlist');
         const payload = {crit: {sort: get(sort)}, filters: get(filters)}
@@ -185,7 +185,7 @@ async function fetch_cardlist() {
         }
 }
 
-async function hypothetical_due_dates(card_id, date) {
+export async function hypothetical_due_dates(card_id, date) {
         const url = new URL(api_url + 'hypothetical_due_dates')
         url.search = new URLSearchParams({card_id: card_id, date: date})
         var options = default_options()
@@ -195,7 +195,7 @@ async function hypothetical_due_dates(card_id, date) {
         return hypo_due_dates;
 }
 
-async function get_collection_tags() {
+export async function get_collection_tags() {
         const url = new URL(api_url + 'collection_tags')
         var options = default_options()
         options.method = 'GET';
@@ -211,7 +211,7 @@ async function fetchWithAuthentication(url) {
   return response
 }
 
-async function getProtectedImage( media_id) {
+export async function getProtectedImage( media_id) {
   // Fetch the image.
   const url = (api_url + 'get_media?media_id=' + media_id)
   const response = await fetchWithAuthentication( url );
@@ -224,7 +224,7 @@ async function getProtectedImage( media_id) {
   // Update the source of the image.
 }
 
-async function getOcclusionData( media_id ) {
+export async function getOcclusionData( media_id ) {
         // Occlusion cards store their data in plaintext JSON format
         // In a media record referenced by back_image_id
         // We can do this because occlusion cards don't need back images
@@ -236,11 +236,25 @@ async function getOcclusionData( media_id ) {
         return JSON.parse(json)
 }
 
-async function purge(filters) {
+export async function purge(filters) {
         const url = new URL(api_url + 'purge');
         var options = default_options();
         options.body = JSON.stringify( filters );
         const response = await fetch(url, options);
 }
 
-export { random_id, getOcclusionData, purge, get_collection_tags, hypothetical_due_dates, register_and_get_token, fetch_cardlist, get_users_list, upload_media, commit_changes, commit_grade, error, getProtectedImage, get_token }
+export const due_count = derived(filters,
+                                 async (filters, set) => {set(await get_due_count())} ,
+                                 '-' //default
+                         )
+
+export const created_count = derived(filters,
+                                 async (filters, set) => {set(await get_created_count())},
+                                 '-' //default
+                         )
+
+export const next_two_due = derived([filters, sort, card_to_review],
+                async (params, set) => { const ntd = await get_next_two_due(); set(ntd); },
+                [null, null]
+        )
+

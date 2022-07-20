@@ -1,5 +1,5 @@
 <script>
-  import { fetch_cardlist } from './api.js';
+  import { fetch_cardlist, next_two_due } from './api.js';
   import { new_card } from './card_templates.js';
   import Tristate from './tristate.svelte';
   import ReviewButton from './review_button.svelte';
@@ -9,7 +9,7 @@
   import Masonry from './masonry.svelte';
   import Loading from './loading.svelte';
   import { card_to_edit, card_to_review, username } from './state.js'
-  import { filters, sort, next_two_due } from './filters.js'
+  import { filters, sort, } from './filters.js'
   let innerWidth;
   // one column for every 450px of window width
   // At least one column
